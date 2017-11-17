@@ -600,6 +600,14 @@ msgstr ""
 #~ msgid "config path: {config_path} does not exist."
 #~ msgstr "配置文件路径: {config_path} 不存在"
 
+<<<<<<< HEAD
 #~ msgid "unknown persist mode: {persist_mode}"
 #~ msgstr "无效的 persist mode: {persist_mode}"
 
+=======
+#~ msgid ""
+#~ "securities can not be empty, using "
+#~ "`--security stock/future` to specific security"
+#~ " type"
+#~ msgstr "交易标的不能为空，请通过 `--security stock/future` 来设置您策略的交易标的。"
+>>>>>>> 59da2835e5888f48848127459f967b4dd04ca188
