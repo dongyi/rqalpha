@@ -16,6 +16,7 @@
 
 from rqalpha.interface import AbstractFrontendValidator
 from rqalpha.const import SIDE, POSITION_EFFECT, DEFAULT_ACCOUNT_TYPE
+from rqalpha.utils.logger import user_system_log
 
 from rqalpha.utils.i18n import gettext as _
 
@@ -27,13 +28,13 @@ class CashValidator(AbstractFrontendValidator):
     def _stock_validator(self, account, order):
         if order.side == SIDE.SELL:
             return True
-        # 检查可用资金是否充足
-        cost_money = order.frozen_price * order.quantity
+        frozen_value = order.frozen_price * order.quantity
+        cost_money = frozen_value + self._env.get_order_transaction_cost(DEFAULT_ACCOUNT_TYPE.STOCK, order)
         if cost_money <= account.cash:
             return True
 
-        order.mark_rejected(
-            _("Order Rejected: not enough money to buy {order_book_id}, needs {cost_money:.2f}, "
+        user_system_log.warn(
+            _("Order Creation Failed: not enough money to buy {order_book_id}, needs {cost_money:.2f}, "
               "cash {cash:.2f}").format(
                 order_book_id=order.order_book_id,
                 cost_money=cost_money,
@@ -51,11 +52,12 @@ class CashValidator(AbstractFrontendValidator):
         margin_rate = margin_info['long_margin_ratio' if order.side == 'BUY' else 'short_margin_ratio']
         margin = order.frozen_price * order.quantity * instrument.contract_multiplier * margin_rate
         cost_money = margin * self._env.config.base.margin_multiplier
+        cost_money += self._env.get_order_transaction_cost(DEFAULT_ACCOUNT_TYPE.FUTURE, order)
         if cost_money <= account.cash:
             return True
 
-        order.mark_rejected(
-            _("Order Rejected: not enough money to buy {order_book_id}, needs {cost_money:.2f},"
+        user_system_log.warn(
+            _("Order Creation Failed: not enough money to buy {order_book_id}, needs {cost_money:.2f},"
               " cash {cash:.2f}").format(
                 order_book_id=order.order_book_id,
                 cost_money=cost_money,

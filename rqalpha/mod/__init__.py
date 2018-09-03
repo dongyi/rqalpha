@@ -92,4 +92,7 @@ SYSTEM_MOD_LIST = [
     "sys_risk",
     "sys_simulation",
     "sys_stock_realtime",
+    "sys_incremental",
+    "sys_booking",
+    "sys_transaction_cost"
 ]

@@ -19,8 +19,10 @@ import pprint
 import re
 import six
 import collections
+from decimal import getcontext, ROUND_FLOOR
 
 from contextlib import contextmanager
+import numpy as np
 
 from rqalpha.utils.exception import CustomError, CustomException
 from rqalpha.const import EXC_TYPE, INSTRUMENT_TYPE, DEFAULT_ACCOUNT_TYPE, UNDERLYING_SYMBOL_PATTERN, NIGHT_TRADING_NS
@@ -216,6 +218,13 @@ def instrument_type_str2enum(type_str):
         raise NotImplementedError
 
 
+def account_type_str2enum(type_str):
+    return {
+        DEFAULT_ACCOUNT_TYPE.STOCK.name: DEFAULT_ACCOUNT_TYPE.STOCK,
+        DEFAULT_ACCOUNT_TYPE.FUTURE.name: DEFAULT_ACCOUNT_TYPE.FUTURE
+    }[type_str]
+
+
 INST_TYPE_IN_STOCK_ACCOUNT = [
     INSTRUMENT_TYPE.CS,
     INSTRUMENT_TYPE.ETF,
@@ -318,8 +327,13 @@ def is_run_from_ipython():
         return False
 
 
-def generate_account_type_dict():
-    account_type_dict = {}
-    for key, a_type in six.iteritems(DEFAULT_ACCOUNT_TYPE.__members__):
-        account_type_dict[key] = a_type.value
-    return account_type_dict
+def is_valid_price(price):
+    return not np.isnan(price) and price > 0 and price is not None
+
+
+@contextmanager
+def decimal_rounding_floor():
+    original_rounding_option = getcontext().rounding
+    getcontext().rounding = ROUND_FLOOR
+    yield
+    getcontext().rounding = original_rounding_option
